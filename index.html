@@ -85,9 +85,9 @@
         <!-- Sidebar Top Header -->
         <div class="p-4 border-b border-slate-800/60">
             <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-900/30">
-                        <i class="fa-solid fa-bug text-lg"></i>
+                <div cclass"flex items-center space-x-2.5">
+                    <div clclassass="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-900/30">
+                        <i classclass="fa-solid fa-bug text-lg"></i>
                     </div>
                     <div>
                         <h1 class="font-bold text-slate-100 tracking-wide text-base leading-none">Worm AI</h1>
@@ -204,10 +204,12 @@
         <!-- Footer Input Bar -->
         <div class="p-4 md:p-6 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent">
             <div class="max-w-4xl mx-auto relative">
+                <!-- File Input Placed Outside Form to Prevent Mobile Auto-Submission -->
+                <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.txt,.js,.py,.json">
+
                 <form id="chat-form" class="bg-slate-900/90 border border-slate-800 focus-within:border-emerald-500/60 rounded-2xl p-2 md:p-2.5 shadow-2xl transition-all duration-200 flex items-end space-x-2">
                     
                     <!-- File Attachment Button -->
-                    <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.txt,.js,.py,.json">
                     <button type="button" id="attach-btn" class="p-2.5 text-slate-400 hover:text-emerald-400 rounded-xl hover:bg-slate-800 transition shrink-0" title="Attach image or file">
                         <i class="fa-solid fa-paperclip text-lg"></i>
                     </button>
@@ -311,97 +313,97 @@
             if (!currentChatId) return;
 
             const existingIdx = chatSessions.findIndex(s => s.id === currentChatId);
-            const title = currentMessages.find(m => m.role === 'user')?.text.slice(0, 30) || 'New Conversation';
-
-            const sessionData = {
-                id: currentChatId,
-                title: title,
-                messages: currentMessages,
-                updatedAt: new Date().toISOString()
-            };
-
-            if (existingIdx >= 0) {
-                chatSessions[existingIdx] = sessionData;
-            } else {
-                chatSessions.unshift(sessionData);
-            }
-
-            localStorage.setItem('worm_ai_sessions', JSON.stringify(chatSessions));
-            renderSidebarSessions();
-        }
-
-        function renderSidebarSessions() {
-            if (!chatHistoryContainer) return;
-            chatHistoryContainer.innerHTML = '';
-
-            if (chatSessions.length === 0) {
-                chatHistoryContainer.innerHTML = `
-                    <div class="px-3 py-2 text-xs text-slate-500 italic">No previous chats</div>
-                `;
-                return;
-            }
-
-            chatSessions.forEach(session => {
-                const isActive = session.id === currentChatId;
-                const btn = document.createElement('div');
-                btn.className = `group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition ${
-                    isActive ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
-                }`;
-
-                btn.onclick = () => loadSession(session.id);
-                btn.innerHTML = `
-                    <div class="flex items-center space-x-2 truncate pr-1">
-                        <i class="fa-regular fa-message text-[11px] ${isActive ? 'text-emerald-400' : 'text-slate-500'}"></i>
-                        <span class="truncate">${escapeHtml(session.title)}</span>
-                    </div>
-                    <button onclick="deleteSession('${session.id}', event)" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 p-1 transition" title="Delete chat">
-                        <i class="fa-solid fa-trash-can text-[10px]"></i>
-                    </button>
-                `;
-                chatHistoryContainer.appendChild(btn);
-            });
-        }
-
-        function createNewChat() {
-            const newId = generateChatId();
-            initSession(newId);
-            if (sidebar?.classList.contains('translate-x-0')) {
-                sidebar.classList.add('-translate-x-full');
-            }
-        }
-
-        function loadSession(id) {
-            currentChatId = id;
-            if (chatIdText) chatIdText.textContent = currentChatId;
-            const target = chatSessions.find(s => s.id === id);
-            currentMessages = target ? (target.messages || []) : [];
-            renderMessages();
-            renderSidebarSessions();
-            if (window.innerWidth < 768) {
-                sidebar?.classList.add('-translate-x-full');
-            }
-        }
-
-        function deleteSession(id, e) {
+        attachBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
-            chatSessions = chatSessions.filter(s => s.id !== id);
-            localStorage.setItem('worm_ai_sessions', JSON.stringify(chatSessions));
-            if (currentChatId === id) {
-                createNewChat();
-            } else {
-                renderSidebarSessions();
-            }
-        }
-
-        userInput?.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
+            fileInput?.click();
         });
 
-        userInput?.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                chatForm?.dispatchEvent(new Event('submit', { cancelable: true }));
+        fileInput?.addEventListener('change', function(e) {
+            e.stopPropagation();
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+
+            attachedFileBlob = file;
+            isFileLoading = true;
+
+            const previewImg = document.getElementById('preview-img');
+            const previewIcon = document.getElementById('preview-file-icon');
+            const previewUrl = URL.createObjectURL(file);
+
+            if (file.type.startsWith('image/')) {
+                if (previewImg) {
+                    previewImg.src = previewUrl;
+                    previewImg.classList.remove('hidden');
+                }
+                if (previewIcon) previewIcon.classList.add('hidden');
+            } else {
+                if (previewImg) previewImg.classList.add('hidden');
+                if (previewIcon) previewIcon.classList.remove('hidden');
+            }
+
+            if (previewFileName) previewFileName.textContent = `${file.name} (Loading...)`;
+            attachmentPreview?.classList.remove('hidden');
+
+            const sendBtn = document.getElementById('send-btn');
+            if (sendBtn) {
+                sendBtn.disabled = true;
+                sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                sendBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i><span class="text-xs font-semibold">Reading...</span>`;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const fullBase64 = event.target.result;
+                const rawBase64 = fullBase64.includes(',') ? fullBase64.split(',')[1] : fullBase64;
+
+                attachedFile = {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    base64: fullBase64,
+                    rawBase64: rawBase64,
+                    previewUrl: previewUrl
+                };
+                isFileLoading = false;
+
+                if (previewFileName) previewFileName.textContent = file.name;
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    sendBtn.innerHTML = `<span class="text-xs font-semibold tracking-wide">Send</span><i class="fa-solid fa-paper-plane text-xs"></i>`;
+                }
+            };
+            reader.onerror = function() {
+                isFileLoading = false;
+                if (previewFileName) previewFileName.textContent = "Error loading file";
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    sendBtn.innerHTML = `<span class="text-xs font-semibold tracking-wide">Send</span><i class="fa-solid fa-paper-plane text-xs"></i>`;
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        removeAttachmentBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            attachedFile = null;
+            attachedFileBlob = null;
+            isFileLoading = false;
+            if (fileInput) fileInput.value = '';
+            const previewImg = document.getElementById('preview-img');
+            if (previewImg) {
+                previewImg.src = '';
+                previewImg.classList.add('hidden');
+            }
+            attachmentPreview?.classList.add('hidden');
+            
+            const sendBtn = document.getElementById('send-btn');
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                sendBtn.innerHTML = `<span class="text-xs font-semibold tracking-wide">Send</span><i class="fa-solid fa-paper-plane text-xs"></i>`;
             }
         });
 
@@ -694,12 +696,17 @@
                 let response;
 
                 if (fileData) {
+                    const promptText = text || 'Kya likha hai iss image me? Detail se batao.';
                     const payload = {
-                        user_input: text || 'Kya likha hai iss image me?',
-                        text: text || 'Kya likha hai iss image me?',
+                        user_input: promptText,
+                        text: promptText,
+                        prompt: promptText,
                         chat_id: currentChatId,
                         image: fileData.base64,
-                        file: fileData.base64
+                        file: fileData.base64,
+                        image_url: fileData.base64,
+                        base64: fileData.rawBase64,
+                        file_data: fileData.base64
                     };
                     
                     try {
@@ -713,8 +720,8 @@
                             const formData = new FormData();
                             formData.append('file', attachedFileBlob, fileData.name);
                             formData.append('image', attachedFileBlob, fileData.name);
-                            formData.append('user_input', text || 'Kya likha hai iss image me?');
-                            formData.append('text', text || 'Kya likha hai iss image me?');
+                            formData.append('user_input', promptText);
+                            formData.append('text', promptText);
                             formData.append('chat_id', currentChatId);
 
                             response = await fetch(apiUrl, {

@@ -189,11 +189,12 @@
 
         <!-- Attachment Preview Bar (hidden by default) -->
         <div id="attachment-preview-container" class="hidden px-4 md:px-6 pt-2 pb-0 max-w-4xl mx-auto w-full">
-            <div class="inline-flex items-center gap-2 p-2 bg-slate-800/90 border border-slate-700 rounded-lg text-xs text-slate-200">
-                <div id="preview-file-icon" class="text-emerald-400 text-base">
+            <div class="inline-flex items-center gap-2 p-2 bg-slate-800/90 border border-slate-700 rounded-lg text-xs text-slate-200 shadow-md">
+                <div id="preview-file-icon" class="text-emerald-400 text-base flex items-center justify-center">
                     <i class="fa-solid fa-file-image"></i>
                 </div>
-                <span id="preview-file-name" class="max-w-xs truncate font-mono text-[11px]">attachment.png</span>
+                <img id="preview-img" class="h-10 w-10 object-cover rounded hidden border border-slate-700" alt="Preview">
+                <span id="preview-file-name" class="max-w-[150px] md:max-w-xs truncate font-mono text-[11px]">attachment.png</span>
                 <button id="remove-attachment-btn" class="ml-2 text-slate-400 hover:text-red-400 p-1">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -261,6 +262,7 @@
         let currentMessages = [];
         let attachedFile = null;
         let attachedFileBlob = null;
+        let isFileLoading = false;
         let apiUrl = localStorage.getItem('worm_ai_api_url') || 'https://wormapi.vercel.app/chat';
 
         const messagesContainer = document.getElementById('messages-container');
@@ -426,15 +428,52 @@
             if (!file) return;
 
             attachedFileBlob = file;
+            isFileLoading = true;
+
+            const previewImg = document.getElementById('preview-img');
+            const previewIcon = document.getElementById('preview-file-icon');
+            const previewUrl = URL.createObjectURL(file);
+
+            if (file.type.startsWith('image/')) {
+                if (previewImg) {
+                    previewImg.src = previewUrl;
+                    previewImg.classList.remove('hidden');
+                }
+                if (previewIcon) previewIcon.classList.add('hidden');
+            } else {
+                if (previewImg) previewImg.classList.add('hidden');
+                if (previewIcon) previewIcon.classList.remove('hidden');
+            }
+
+            if (previewFileName) previewFileName.textContent = file.name;
+            attachmentPreview?.classList.remove('hidden');
+
+            const sendBtn = document.getElementById('send-btn');
+            if (sendBtn) {
+                sendBtn.disabled = true;
+                sendBtn.classList.add('opacity-50');
+            }
+
             const reader = new FileReader();
             reader.onload = function(event) {
                 attachedFile = {
                     name: file.name,
                     type: file.type,
-                    base64: event.target.result
+                    base64: event.target.result,
+                    previewUrl: previewUrl
                 };
-                if (previewFileName) previewFileName.textContent = file.name;
-                attachmentPreview?.classList.remove('hidden');
+                isFileLoading = false;
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.classList.remove('opacity-50');
+                }
+            };
+            reader.onerror = function() {
+                isFileLoading = false;
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.classList.remove('opacity-50');
+                }
             };
             reader.readAsDataURL(file);
         });
@@ -442,7 +481,13 @@
         removeAttachmentBtn?.addEventListener('click', () => {
             attachedFile = null;
             attachedFileBlob = null;
+            isFileLoading = false;
             if (fileInput) fileInput.value = '';
+            const previewImg = document.getElementById('preview-img');
+            if (previewImg) {
+                previewImg.src = '';
+                previewImg.classList.add('hidden');
+            }
             attachmentPreview?.classList.add('hidden');
         });
 
@@ -482,9 +527,14 @@
                     messageWrapper.innerHTML = `
                         <div class="max-w-[85%] md:max-w-[75%] bg-emerald-600/90 text-white p-3.5 rounded-2xl rounded-tr-none shadow-md space-y-2">
                             ${msg.attachment ? `
-                                <div class="mb-2 p-1.5 bg-emerald-700/60 rounded-lg text-xs flex items-center gap-2 border border-emerald-500/30">
-                                    <i class="fa-solid fa-paperclip"></i>
-                                    <span class="truncate max-w-[180px]">${escapeHtml(msg.attachment.name)}</span>
+                                <div class="mb-2 p-2 bg-emerald-800/80 rounded-xl text-xs flex flex-col gap-1 border border-emerald-500/40">
+                                    ${msg.attachment.type && msg.attachment.type.startsWith('image/') && (msg.attachment.base64 || msg.attachment.previewUrl) ? `
+                                        <img src="${msg.attachment.base64 || msg.attachment.previewUrl}" class="max-h-48 rounded-lg object-contain my-1 bg-slate-950/60 w-full" alt="Attached image">
+                                    ` : ''}
+                                    <div class="flex items-center gap-2 font-mono text-[11px] text-emerald-200">
+                                        <i class="fa-solid fa-paperclip"></i>
+                                        <span class="truncate max-w-[200px]">${escapeHtml(msg.attachment.name)}</span>
+                                    </div>
                                 </div>
                             ` : ''}
                             <p class="text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(msg.text)}</p>
@@ -585,6 +635,8 @@
 
         chatForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (isFileLoading) return;
+
             const text = userInput ? userInput.value.trim() : '';
             if (!text && !attachedFile) return;
 
@@ -607,6 +659,11 @@
             attachedFile = null;
             attachedFileBlob = null;
             if (fileInput) fileInput.value = '';
+            const previewImg = document.getElementById('preview-img');
+            if (previewImg) {
+                previewImg.src = '';
+                previewImg.classList.add('hidden');
+            }
             attachmentPreview?.classList.add('hidden');
 
             if (userInput) {
@@ -636,34 +693,35 @@
             try {
                 let response;
 
-                if (fileData && attachedFileBlob) {
-                    // Send Multipart FormData for binary file uploads
-                    const formData = new FormData();
-                    formData.append('file', attachedFileBlob, fileData.name);
-                    formData.append('image', attachedFileBlob, fileData.name);
-                    formData.append('user_input', text || 'Kya likha hai iss image me?');
-                    formData.append('text', text || 'Kya likha hai iss image me?');
-                    formData.append('chat_id', currentChatId);
-
+                if (fileData) {
+                    const payload = {
+                        user_input: text || 'Kya likha hai iss image me?',
+                        text: text || 'Kya likha hai iss image me?',
+                        chat_id: currentChatId,
+                        image: fileData.base64,
+                        file: fileData.base64
+                    };
+                    
                     try {
-                        response = await fetch(apiUrl, {
-                            method: 'POST',
-                            body: formData
-                        });
-                    } catch (e) {
-                        // Fallback to JSON payload if FormData fetch fails
-                        const payload = {
-                            user_input: text || 'Kya likha hai iss image me?',
-                            text: text || 'Kya likha hai iss image me?',
-                            chat_id: currentChatId,
-                            image: fileData.base64,
-                            file: fileData.base64
-                        };
                         response = await fetch(apiUrl, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
                         });
+                    } catch (e) {
+                        if (attachedFileBlob) {
+                            const formData = new FormData();
+                            formData.append('file', attachedFileBlob, fileData.name);
+                            formData.append('image', attachedFileBlob, fileData.name);
+                            formData.append('user_input', text || 'Kya likha hai iss image me?');
+                            formData.append('text', text || 'Kya likha hai iss image me?');
+                            formData.append('chat_id', currentChatId);
+
+                            response = await fetch(apiUrl, {
+                                method: 'POST',
+                                body: formData
+                            });
+                        }
                     }
                 } else {
                     // Send standard JSON request for text-only messages

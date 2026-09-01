@@ -54,9 +54,9 @@
     </main>
 
     <script>
-        // API Domain
-        const BASE_API = 'https://wormapi.vercel.app'; 
+        const BASE_API = 'https://wormapi.vercel.app'; // Apna backend API domain yahan update karein
         let selectedFile = null;
+        let currentAudio = null;
 
         const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
@@ -111,6 +111,44 @@
             });
         }
 
+        // Speaker Click Audio Player Handler
+        async function playSpeech(speechUrl, btnElement) {
+            const icon = btnElement.querySelector('i');
+            
+            // If playing current audio, pause it
+            if (currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
+                icon.className = "fa-solid fa-volume-high";
+                return;
+            }
+
+            try {
+                icon.className = "fa-solid fa-spinner fa-spin text-emerald-400";
+                
+                if (currentAudio) {
+                    currentAudio.pause();
+                }
+
+                currentAudio = new Audio(speechUrl);
+
+                currentAudio.addEventListener('canplaythrough', () => {
+                    icon.className = "fa-solid fa-pause text-emerald-400";
+                    currentAudio.play();
+                });
+
+                currentAudio.addEventListener('ended', () => {
+                    icon.className = "fa-solid fa-volume-high";
+                });
+
+                currentAudio.addEventListener('error', () => {
+                    icon.className = "fa-solid fa-volume-xmark text-red-400";
+                });
+
+            } catch (err) {
+                icon.className = "fa-solid fa-volume-xmark text-red-400";
+            }
+        }
+
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = userInput.value.trim() || "Kya lekha h";
@@ -155,16 +193,13 @@
                 const botReply = data.text_response || "No response received";
                 const speechUrl = data.speech_url;
 
-                let speechPlayerHtml = '';
+                let speechButtonHtml = '';
                 if (speechUrl) {
-                    speechPlayerHtml = `
-                        <div class="mt-3 pt-2 border-t border-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-volume-high text-emerald-400 text-xs"></i>
-                            <audio controls class="h-8 w-full max-w-xs text-xs">
-                                <source src="${speechUrl}" type="audio/mpeg">
-                                Your browser does not support audio element.
-                            </audio>
-                        </div>`;
+                    speechButtonHtml = `
+                        <button onclick="playSpeech('${speechUrl}', this)" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs transition">
+                            <i class="fa-solid fa-volume-high"></i>
+                            <span>Listen Voice</span>
+                        </button>`;
                 }
 
                 messagesContainer.innerHTML += `
@@ -174,8 +209,8 @@
                                 <i class="fa-solid fa-robot"></i>
                             </div>
                             <div class="bg-slate-900 border border-slate-800 text-slate-100 p-4 rounded-2xl rounded-tl-none text-sm">
-                                ${marked.parse(botReply)}
-                                ${speechPlayerHtml}
+                                <div>${marked.parse(botReply)}</div>
+                                ${speechButtonHtml}
                             </div>
                         </div>
                     </div>`;

@@ -7,8 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
+    <!-- Code Highlight -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 
@@ -133,6 +135,7 @@
 </head>
 <body class="h-full bg-slate-100 text-slate-800 font-sans flex flex-col">
 
+    <!-- Top Header -->
     <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-sm">W</div>
@@ -146,6 +149,7 @@
         </div>
     </header>
 
+    <!-- Chat Area -->
     <main id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 max-w-4xl mx-auto w-full">
         <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center my-auto py-12">
             <div class="w-16 h-16 rounded-2xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-600 text-2xl mb-3">
@@ -159,6 +163,7 @@
         </div>
     </main>
 
+    <!-- File Attachment Preview -->
     <div id="attachment-preview" class="hidden max-w-4xl mx-auto w-full px-4 mb-2">
         <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 shadow-sm">
             <i class="fa-solid fa-image text-emerald-600"></i>
@@ -167,6 +172,7 @@
         </div>
     </div>
 
+    <!-- Input Bar Section -->
     <div class="bg-white border-t border-slate-200 p-3 shadow-lg">
         <div class="max-w-4xl mx-auto">
             <form id="chat-form" class="flex items-center gap-2 bg-slate-50 border border-slate-300 focus-within:border-emerald-500 focus-within:bg-white rounded-xl p-2 transition">
@@ -188,7 +194,7 @@
     <script>
         const BASE_API = 'https://wormapi.vercel.app'; // Apne API URL se replace karein
         let selectedFile = null;
-        let currentAudio = null;
+        let activeAudioButton = null;
         let currentChatId = null;
 
         const chatForm = document.getElementById('chat-form');
@@ -244,32 +250,70 @@
             });
         }
 
+        // Fixed Independent Audio Function
         async function playSpeech(speechUrl, btnElement) {
             const icon = btnElement.querySelector('i');
-            if (currentAudio && !currentAudio.paused) {
-                currentAudio.pause();
-                icon.className = "fa-solid fa-volume-high";
-                return;
+
+            if (btnElement.audioInstance) {
+                if (!btnElement.audioInstance.paused) {
+                    btnElement.audioInstance.pause();
+                    icon.className = "fa-solid fa-volume-high";
+                    return;
+                } else {
+                    if (activeAudioButton && activeAudioButton !== btnElement) {
+                        stopAudio(activeAudioButton);
+                    }
+                    btnElement.audioInstance.play();
+                    icon.className = "fa-solid fa-pause text-emerald-600";
+                    activeAudioButton = btnElement;
+                    return;
+                }
+            }
+
+            if (activeAudioButton) {
+                stopAudio(activeAudioButton);
             }
 
             try {
                 icon.className = "fa-solid fa-spinner fa-spin text-emerald-600";
-                if (currentAudio) currentAudio.pause();
+                
+                const audio = new Audio(speechUrl);
+                btnElement.audioInstance = audio;
+                activeAudioButton = btnElement;
 
-                currentAudio = new Audio(speechUrl);
-                currentAudio.addEventListener('canplaythrough', () => {
+                audio.addEventListener('canplaythrough', () => {
                     icon.className = "fa-solid fa-pause text-emerald-600";
-                    currentAudio.play();
+                    audio.play();
                 });
-                currentAudio.addEventListener('ended', () => {
+
+                audio.addEventListener('ended', () => {
                     icon.className = "fa-solid fa-volume-high";
+                    btnElement.audioInstance = null;
+                    activeAudioButton = null;
                 });
-                currentAudio.addEventListener('error', () => {
+
+                audio.addEventListener('error', () => {
                     icon.className = "fa-solid fa-volume-xmark text-red-500";
+                    btnElement.audioInstance = null;
+                    activeAudioButton = null;
                 });
+
             } catch (err) {
                 icon.className = "fa-solid fa-volume-xmark text-red-500";
+                btnElement.audioInstance = null;
+                activeAudioButton = null;
             }
+        }
+
+        function stopAudio(btnElement) {
+            if (btnElement && btnElement.audioInstance) {
+                btnElement.audioInstance.pause();
+                btnElement.audioInstance.currentTime = 0;
+                btnElement.audioInstance = null;
+                const icon = btnElement.querySelector('i');
+                if (icon) icon.className = "fa-solid fa-volume-high";
+            }
+            activeAudioButton = null;
         }
 
         function copyCodeBlock(btn) {
@@ -310,7 +354,6 @@
             return container.innerHTML;
         }
 
-        // Animated Typewriter Stream Function
         function streamTextToElement(targetElement, fullText, speed = 15, onComplete) {
             let index = 0;
             targetElement.innerHTML = '';
@@ -352,7 +395,6 @@
 
             if (welcomeScreen) welcomeScreen.remove();
 
-            // Render User Message
             messagesContainer.innerHTML += `
                 <div class="flex justify-end w-full">
                     <div class="max-w-[85%] bg-emerald-600 text-white p-3.5 rounded-2xl rounded-tr-none text-sm shadow">
@@ -389,7 +431,6 @@
 
                 const msgId = 'bot-msg-' + Date.now();
                 
-                // Add Empty Bot Bubble for Typing Animation
                 messagesContainer.innerHTML += `
                     <div class="flex justify-start w-full">
                         <div class="flex items-start gap-3 max-w-[95%] w-full">
@@ -406,7 +447,6 @@
                 const targetDiv = document.getElementById(msgId);
                 const audioDiv = document.getElementById(`${msgId}-audio`);
 
-                // Start Typewriter Stream
                 streamTextToElement(targetDiv, botReply, 15, () => {
                     if (speechUrl) {
                         audioDiv.innerHTML = `

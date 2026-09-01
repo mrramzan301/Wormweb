@@ -48,7 +48,7 @@
             font-weight: 600;
         }
 
-        /* Lists Formatting (Numbered & Bullet Points) */
+        /* Lists Formatting */
         .markdown-content ul, 
         .markdown-content ol {
             margin-top: 0.5rem;
@@ -56,13 +56,8 @@
             padding-left: 1.5rem;
         }
 
-        .markdown-content ul {
-            list-style-type: disc;
-        }
-
-        .markdown-content ol {
-            list-style-type: decimal;
-        }
+        .markdown-content ul { list-style-type: disc; }
+        .markdown-content ol { list-style-type: decimal; }
 
         .markdown-content li {
             margin-bottom: 0.4rem;
@@ -85,7 +80,7 @@
             font-size: 0.85em;
         }
 
-        /* Full Code Block Container */
+        /* Code Block Container */
         .markdown-content pre {
             background-color: #0f172a !important;
             border-radius: 0.75rem;
@@ -128,9 +123,7 @@
             transition: all 0.2s;
         }
 
-        .copy-btn:hover {
-            background-color: #475569;
-        }
+        .copy-btn:hover { background-color: #475569; }
     </style>
 </head>
 <body class="h-full bg-slate-100 text-slate-800 font-sans flex flex-col">
@@ -192,7 +185,7 @@
     </div>
 
     <script>
-        const BASE_API = 'https://wormapi.vercel.app'; // Apne API URL se replace karein
+        const BASE_API = 'https://wormapi.vercel.app'; // Production Server Endpoint
         let selectedFile = null;
         let activeAudioButton = null;
         let currentChatId = null;
@@ -250,7 +243,6 @@
             });
         }
 
-        // Fixed Independent Audio Function
         async function playSpeech(speechUrl, btnElement) {
             const icon = btnElement.querySelector('i');
 
@@ -354,7 +346,7 @@
             return container.innerHTML;
         }
 
-        function streamTextToElement(targetElement, fullText, speed = 15, onComplete) {
+        function streamTextToElement(targetElement, fullText, speed = 10, onComplete) {
             let index = 0;
             targetElement.innerHTML = '';
             
@@ -380,7 +372,7 @@
 
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const text = userInput.value.trim() || "Kya lekha h";
+            const text = userInput.value.trim() || "Kya likha hai?";
             const fileToUpload = selectedFile;
             
             selectedFile = null;
@@ -447,7 +439,7 @@
                 const targetDiv = document.getElementById(msgId);
                 const audioDiv = document.getElementById(`${msgId}-audio`);
 
-                streamTextToElement(targetDiv, botReply, 15, () => {
+                streamTextToElement(targetDiv, botReply, 10, () => {
                     if (speechUrl) {
                         audioDiv.innerHTML = `
                             <button onclick="playSpeech('${speechUrl}', this)" class="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold transition">

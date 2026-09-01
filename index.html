@@ -1,111 +1,130 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Worm AI - Vision & Speech</title>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Marked JS for Markdown Parsing -->
-    <script src="[https://cdn.jsdelivr.net/npm/marked/marked.min.js](https://cdn.jsdelivr.net/npm/marked/marked.min.js)"></script>
-    
-    <!-- Highlight.js for Code Syntax Highlighting -->
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css](https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css)">
-    <script src="[https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js](https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js)"></script>
+    <!-- Code Formatting Scripts & Styles -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 
     <style>
-        /* Custom Styling for Code Blocks */
-        .prose pre {
-            background-color: #0d1117 !important;
+        /* Fallback Styles if Tailwind fails */
+        body {
+            margin: 0;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        /* Custom Styling for AI Code Blocks */
+        .markdown-body pre {
+            background-color: #161b22 !important;
             border: 1px solid #30363d;
             border-radius: 0.75rem;
-            padding: 1rem;
+            padding: 1.25rem 1rem 1rem 1rem;
             position: relative;
-            margin-top: 0.75rem;
-            margin-bottom: 0.75rem;
+            margin: 0.75rem 0;
             overflow-x: auto;
+            color: #e6edf3;
         }
-        .prose code {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        .markdown-body code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-size: 0.85rem;
             line-height: 1.5;
         }
-        .prose :not(pre) > code {
+        .markdown-body :not(pre) > code {
             background-color: rgba(110, 118, 129, 0.4);
             padding: 0.2rem 0.4rem;
             border-radius: 0.375rem;
-            font-size: 0.85em;
+            color: #38bdf8;
+        }
+        .code-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #21262d;
+            padding: 4px 12px;
+            border-radius: 6px 6px 0 0;
+            margin: -1.25rem -1rem 0.75rem -1rem;
+            border-bottom: 1px solid #30363d;
+            font-size: 0.75rem;
+            color: #8b949e;
         }
         .copy-code-btn {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            background: #21262d;
-            border: 1px solid #30363d;
+            background: #30363d;
             color: #c9d1d9;
-            padding: 0.25rem 0.6rem;
-            border-radius: 0.375rem;
-            font-size: 0.75rem;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.2s;
+            font-size: 0.75rem;
         }
         .copy-code-btn:hover {
-            background: #30363d;
+            background: #484f58;
             color: #ffffff;
         }
     </style>
 </head>
-<body class="h-full font-sans flex flex-col md:flex-row overflow-hidden bg-slate-950">
+<body class="h-screen w-screen flex flex-col bg-slate-950 text-slate-100 overflow-hidden">
 
-    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-950">
-        <!-- Messages Container -->
-        <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-            <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center my-auto">
-                <div class="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center text-white text-2xl mb-4">
-                    <i class="fa-solid fa-code"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-white">Worm AI Assistant</h2>
-                <p class="text-slate-400 text-sm mt-1">Vision OCR, Code Blocks & Voice Support</p>
-                <div class="mt-2 text-xs text-slate-300">
-                    Developed by <strong class="text-emerald-400">Ramzan Ahsan</strong> | 
-                    <a href="[https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1](https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1)" target="_blank" class="text-emerald-400 underline hover:text-emerald-300">Join WhatsApp Group</a>
-                </div>
-            </div>
+    <!-- Header Section -->
+    <header class="p-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">W</div>
+            <h1 class="text-sm font-semibold text-white">Worm AI Assistant</h1>
         </div>
-
-        <!-- Attachment Preview -->
-        <div id="attachment-preview" class="hidden px-4 max-w-4xl mx-auto w-full mb-2">
-            <div class="inline-flex items-center gap-2 p-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200">
-                <i class="fa-solid fa-file-image text-emerald-400"></i>
-                <span id="preview-filename" class="font-mono text-[11px]">image.jpg</span>
-                <button id="remove-file-btn" class="ml-2 text-slate-400 hover:text-red-400"><i class="fa-solid fa-xmark"></i></button>
-            </div>
+        <div class="text-[11px] text-slate-400">
+            Dev: <span class="text-emerald-400 font-medium">Ramzan Ahsan</span>
         </div>
+    </header>
 
-        <!-- Input Area -->
-        <div class="p-4 bg-slate-950 border-t border-slate-900">
-            <div class="max-w-4xl mx-auto relative">
-                <input type="file" id="file-input" class="hidden" accept="image/*">
-                
-                <form id="chat-form" class="bg-slate-900 border border-slate-800 focus-within:border-emerald-500 rounded-2xl p-2 flex items-center gap-2">
-                    <button type="button" id="attach-btn" class="p-3 text-slate-400 hover:text-emerald-400 transition shrink-0">
-                        <i class="fa-solid fa-paperclip text-lg"></i>
-                    </button>
-                    
-                    <textarea id="user-input" rows="1" placeholder="Poochhein ya code mangein..." class="flex-1 bg-transparent text-slate-100 text-sm focus:outline-none resize-none px-2 py-1"></textarea>
-
-                    <button type="submit" id="send-btn" disabled class="px-4 py-2 bg-emerald-600/40 text-slate-400 rounded-xl flex items-center gap-2 text-xs font-semibold shrink-0 transition">
-                        <span id="send-btn-text">Send</span>
-                        <i id="send-btn-icon" class="fa-solid fa-paper-plane"></i>
-                    </button>
-                </form>
+    <!-- Chat Messages View -->
+    <main id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4">
+        <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center my-auto">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl mb-3">
+                <i class="fa-solid fa-code"></i>
             </div>
+            <h2 class="text-xl font-bold text-white">Worm AI Chat & Code</h2>
+            <p class="text-slate-400 text-xs mt-1">OCR Image Recognition, Voice & Markdown Formatting</p>
+            <a href="https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1" target="_blank" class="mt-3 px-3 py-1.5 bg-emerald-600/10 border border-emerald-500/30 rounded-lg text-emerald-400 text-xs flex items-center gap-1.5 hover:bg-emerald-600/20 transition">
+                <i class="fa-brands fa-whatsapp"></i> Join WhatsApp Group
+            </a>
         </div>
     </main>
 
+    <!-- File Preview Strip -->
+    <div id="attachment-preview" class="hidden px-4 max-w-4xl mx-auto w-full mb-1">
+        <div class="inline-flex items-center gap-2 p-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-200">
+            <i class="fa-solid fa-image text-emerald-400"></i>
+            <span id="preview-filename" class="font-mono text-[11px] truncate max-w-[200px]">image.jpg</span>
+            <button id="remove-file-btn" class="ml-1 text-slate-400 hover:text-red-400"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+
+    <!-- Input Box Bar -->
+    <div class="p-3 bg-slate-900 border-t border-slate-800">
+        <form id="chat-form" class="max-w-4xl mx-auto flex items-center gap-2 bg-slate-950 border border-slate-800 focus-within:border-emerald-500 rounded-xl p-2">
+            <input type="file" id="file-input" class="hidden" accept="image/*">
+            <button type="button" id="attach-btn" class="p-2 text-slate-400 hover:text-emerald-400 transition">
+                <i class="fa-solid fa-paperclip text-base"></i>
+            </button>
+            
+            <textarea id="user-input" rows="1" placeholder="Poochhein ya code mangein..." class="flex-1 bg-transparent text-slate-100 text-sm focus:outline-none resize-none px-2 py-1"></textarea>
+
+            <button type="submit" id="send-btn" disabled class="px-3.5 py-1.5 bg-emerald-600/40 text-slate-400 rounded-lg flex items-center gap-1.5 text-xs font-semibold shrink-0 transition">
+                <span id="send-btn-text">Send</span>
+                <i id="send-btn-icon" class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+
     <script>
-        const BASE_API = '[https://wormapi.vercel.app](https://wormapi.vercel.app)'; // Apne Vercel API URL se replace karein
+        const BASE_API = 'https://wormapi.vercel.app';
         let selectedFile = null;
         let currentAudio = null;
         let currentChatId = null;
@@ -128,10 +147,10 @@
             const hasFile = selectedFile !== null;
             if (hasText || hasFile) {
                 sendBtn.disabled = false;
-                sendBtn.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer rounded-xl flex items-center gap-2 text-xs font-semibold shrink-0 shadow-md transition";
+                sendBtn.className = "px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer rounded-lg flex items-center gap-1.5 text-xs font-semibold shrink-0 shadow-md transition";
             } else {
                 sendBtn.disabled = true;
-                sendBtn.className = "px-4 py-2 bg-emerald-600/40 text-slate-400 cursor-not-allowed rounded-xl flex items-center gap-2 text-xs font-semibold shrink-0 transition";
+                sendBtn.className = "px-3.5 py-1.5 bg-emerald-600/40 text-slate-400 cursor-not-allowed rounded-lg flex items-center gap-1.5 text-xs font-semibold shrink-0 transition";
             }
         }
 
@@ -174,36 +193,29 @@
 
             try {
                 icon.className = "fa-solid fa-spinner fa-spin text-emerald-400";
-                
-                if (currentAudio) {
-                    currentAudio.pause();
-                }
+                if (currentAudio) currentAudio.pause();
 
                 currentAudio = new Audio(speechUrl);
-
                 currentAudio.addEventListener('canplaythrough', () => {
                     icon.className = "fa-solid fa-pause text-emerald-400";
                     currentAudio.play();
                 });
-
                 currentAudio.addEventListener('ended', () => {
                     icon.className = "fa-solid fa-volume-high";
                 });
-
                 currentAudio.addEventListener('error', () => {
                     icon.className = "fa-solid fa-volume-xmark text-red-400";
                 });
-
             } catch (err) {
                 icon.className = "fa-solid fa-volume-xmark text-red-400";
             }
         }
 
-        function copyCode(btn) {
-            const pre = btn.parentElement;
+        function copyCodeText(btn) {
+            const pre = btn.closest('pre');
             const code = pre.querySelector('code').innerText;
             navigator.clipboard.writeText(code).then(() => {
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                btn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> Copied!';
                 setTimeout(() => {
                     btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
                 }, 2000);
@@ -211,25 +223,30 @@
         }
 
         function formatMarkdownResponse(text) {
-            const html = marked.parse(text);
-            const tempDiv = document.createElement('div');
-            tempDiv.className = 'prose text-slate-100 text-sm max-w-none';
-            tempDiv.innerHTML = html;
+            const rawHtml = marked.parse(text);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'markdown-body text-slate-100 text-sm';
+            wrapper.innerHTML = rawHtml;
 
-            // Add Copy Button to code blocks & highlight syntax
-            tempDiv.querySelectorAll('pre').forEach((pre) => {
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'copy-code-btn';
-                copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
-                copyBtn.onclick = function() { copyCode(this); };
-                pre.appendChild(copyBtn);
+            wrapper.querySelectorAll('pre').forEach((pre) => {
+                const codeBlock = pre.querySelector('code');
+                let lang = 'code';
+                if (codeBlock) {
+                    const match = codeBlock.className.match(/language-(\w+)/);
+                    if (match) lang = match[1];
+                }
+
+                const header = document.createElement('div');
+                header.className = 'code-box-header';
+                header.innerHTML = `
+                    <span>${lang}</span>
+                    <button type="button" class="copy-code-btn" onclick="copyCodeText(this)">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>`;
+                pre.insertBefore(header, pre.firstChild);
             });
 
-            tempDiv.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightElement(block);
-            });
-
-            return tempDiv.outerHTML;
+            return wrapper.outerHTML;
         }
 
         chatForm.addEventListener('submit', async (e) => {
@@ -244,16 +261,16 @@
             updateSendButton();
 
             sendBtn.disabled = true;
-            sendBtnText.textContent = fileToUpload ? "Processing OCR..." : "Thinking...";
+            sendBtnText.textContent = "Sending...";
             sendBtnIcon.className = "fa-solid fa-spinner fa-spin";
 
             if (welcomeScreen) welcomeScreen.remove();
 
             messagesContainer.innerHTML += `
                 <div class="flex justify-end w-full">
-                    <div class="max-w-[80%] bg-emerald-600 text-white p-3 rounded-2xl rounded-tr-none text-sm">
-                        ${fileToUpload ? `<div class="text-xs bg-emerald-700 p-1.5 rounded-lg mb-1 font-mono"><i class="fa-solid fa-paperclip"></i> ${fileToUpload.name}</div>` : ''}
-                        <p>${text}</p>
+                    <div class="max-w-[85%] bg-emerald-600 text-white p-3 rounded-2xl rounded-tr-none text-sm shadow-md">
+                        ${fileToUpload ? `<div class="text-xs bg-emerald-700/80 p-1.5 rounded-lg mb-1.5 font-mono"><i class="fa-solid fa-paperclip"></i> ${fileToUpload.name}</div>` : ''}
+                        <p class="whitespace-pre-wrap">${text}</p>
                     </div>
                 </div>`;
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -278,38 +295,35 @@
 
                 const data = await res.json();
                 
-                if (data.chat_id) {
-                    currentChatId = data.chat_id;
-                }
+                if (data.chat_id) currentChatId = data.chat_id;
 
                 const botReply = data.text_response || "No response received";
                 const speechUrl = data.speech_url;
 
-                let speechButtonHtml = '';
-                if (speechUrl) {
-                    speechButtonHtml = `
-                        <button onclick="playSpeech('${speechUrl}', this)" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs transition">
-                            <i class="fa-solid fa-volume-high"></i>
-                            <span>Listen Voice</span>
-                        </button>`;
-                }
+                let speechButtonHtml = speechUrl ? `
+                    <button onclick="playSpeech('${speechUrl}', this)" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs transition">
+                        <i class="fa-solid fa-volume-high"></i>
+                        <span>Listen Voice</span>
+                    </button>` : '';
 
-                const formattedHtml = formatMarkdownResponse(botReply);
+                const formattedContent = formatMarkdownResponse(botReply);
 
                 messagesContainer.innerHTML += `
                     <div class="flex justify-start w-full">
-                        <div class="flex items-start gap-3 max-w-[88%] w-full">
-                            <div class="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white text-xs mt-1 shrink-0">
+                        <div class="flex items-start gap-2.5 max-w-[92%] w-full">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white text-xs mt-1 shrink-0">
                                 <i class="fa-solid fa-robot"></i>
                             </div>
-                            <div class="bg-slate-900 border border-slate-800 text-slate-100 p-4 rounded-2xl rounded-tl-none text-sm overflow-hidden w-full">
-                                ${formattedHtml}
+                            <div class="bg-slate-900 border border-slate-800 text-slate-100 p-3.5 rounded-2xl rounded-tl-none text-sm w-full overflow-hidden shadow-md">
+                                ${formattedContent}
                                 ${speechButtonHtml}
                             </div>
                         </div>
                     </div>`;
+                
+                Prism.highlightAll();
             } catch (err) {
-                messagesContainer.innerHTML += `<div class="text-red-400 text-xs text-center">Connection error. Check your API server.</div>`;
+                messagesContainer.innerHTML += `<div class="text-red-400 text-xs text-center p-2">Connection error. Please check your Vercel backend.</div>`;
             } finally {
                 sendBtnText.textContent = "Send";
                 sendBtnIcon.className = "fa-solid fa-paper-plane";

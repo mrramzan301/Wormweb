@@ -4,9 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Worm AI - Vision & Speech</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+    
+    <!-- Marked JS for Markdown Parsing -->
+    <script src="[https://cdn.jsdelivr.net/npm/marked/marked.min.js](https://cdn.jsdelivr.net/npm/marked/marked.min.js)"></script>
+    
+    <!-- Highlight.js for Code Syntax Highlighting -->
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css](https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css)">
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js](https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js)"></script>
+
+    <style>
+        /* Custom Styling for Code Blocks */
+        .prose pre {
+            background-color: #0d1117 !important;
+            border: 1px solid #30363d;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            position: relative;
+            margin-top: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow-x: auto;
+        }
+        .prose code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .prose :not(pre) > code {
+            background-color: rgba(110, 118, 129, 0.4);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.375rem;
+            font-size: 0.85em;
+        }
+        .copy-code-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-code-btn:hover {
+            background: #30363d;
+            color: #ffffff;
+        }
+    </style>
 </head>
 <body class="h-full font-sans flex flex-col md:flex-row overflow-hidden bg-slate-950">
 
@@ -15,13 +63,13 @@
         <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
             <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center my-auto">
                 <div class="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center text-white text-2xl mb-4">
-                    <i class="fa-solid fa-volume-high"></i>
+                    <i class="fa-solid fa-code"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-white">Worm AI Assistant</h2>
-                <p class="text-slate-400 text-sm mt-1">Vision OCR, Speech & Chat Memory</p>
+                <p class="text-slate-400 text-sm mt-1">Vision OCR, Code Blocks & Voice Support</p>
                 <div class="mt-2 text-xs text-slate-300">
                     Developed by <strong class="text-emerald-400">Ramzan Ahsan</strong> | 
-                    <a href="https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1" target="_blank" class="text-emerald-400 underline hover:text-emerald-300">Join WhatsApp Group</a>
+                    <a href="[https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1](https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1)" target="_blank" class="text-emerald-400 underline hover:text-emerald-300">Join WhatsApp Group</a>
                 </div>
             </div>
         </div>
@@ -45,7 +93,7 @@
                         <i class="fa-solid fa-paperclip text-lg"></i>
                     </button>
                     
-                    <textarea id="user-input" rows="1" placeholder="Poochhein ya image attach karein..." class="flex-1 bg-transparent text-slate-100 text-sm focus:outline-none resize-none px-2 py-1"></textarea>
+                    <textarea id="user-input" rows="1" placeholder="Poochhein ya code mangein..." class="flex-1 bg-transparent text-slate-100 text-sm focus:outline-none resize-none px-2 py-1"></textarea>
 
                     <button type="submit" id="send-btn" disabled class="px-4 py-2 bg-emerald-600/40 text-slate-400 rounded-xl flex items-center gap-2 text-xs font-semibold shrink-0 transition">
                         <span id="send-btn-text">Send</span>
@@ -57,10 +105,10 @@
     </main>
 
     <script>
-        const BASE_API = 'https://wormapi.vercel.app'; // Replace with your Vercel URL
+        const BASE_API = '[https://wormapi.vercel.app](https://wormapi.vercel.app)'; // Apne Vercel API URL se replace karein
         let selectedFile = null;
         let currentAudio = null;
-        let currentChatId = null; // Stores ongoing chat session ID for context history
+        let currentChatId = null;
 
         const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
@@ -151,6 +199,39 @@
             }
         }
 
+        function copyCode(btn) {
+            const pre = btn.parentElement;
+            const code = pre.querySelector('code').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+                }, 2000);
+            });
+        }
+
+        function formatMarkdownResponse(text) {
+            const html = marked.parse(text);
+            const tempDiv = document.createElement('div');
+            tempDiv.className = 'prose text-slate-100 text-sm max-w-none';
+            tempDiv.innerHTML = html;
+
+            // Add Copy Button to code blocks & highlight syntax
+            tempDiv.querySelectorAll('pre').forEach((pre) => {
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-code-btn';
+                copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+                copyBtn.onclick = function() { copyCode(this); };
+                pre.appendChild(copyBtn);
+            });
+
+            tempDiv.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+
+            return tempDiv.outerHTML;
+        }
+
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = userInput.value.trim() || "Kya lekha h";
@@ -197,7 +278,6 @@
 
                 const data = await res.json();
                 
-                // Save returned chat_id to maintain memory
                 if (data.chat_id) {
                     currentChatId = data.chat_id;
                 }
@@ -214,14 +294,16 @@
                         </button>`;
                 }
 
+                const formattedHtml = formatMarkdownResponse(botReply);
+
                 messagesContainer.innerHTML += `
                     <div class="flex justify-start w-full">
-                        <div class="flex items-start gap-3 max-w-[85%]">
+                        <div class="flex items-start gap-3 max-w-[88%] w-full">
                             <div class="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white text-xs mt-1 shrink-0">
                                 <i class="fa-solid fa-robot"></i>
                             </div>
-                            <div class="bg-slate-900 border border-slate-800 text-slate-100 p-4 rounded-2xl rounded-tl-none text-sm">
-                                <div>${marked.parse(botReply)}</div>
+                            <div class="bg-slate-900 border border-slate-800 text-slate-100 p-4 rounded-2xl rounded-tl-none text-sm overflow-hidden w-full">
+                                ${formattedHtml}
                                 ${speechButtonHtml}
                             </div>
                         </div>

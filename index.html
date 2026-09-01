@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Worm AI - Developed by Ramzan Ahsan</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Marked.js for Markdown Parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -21,7 +18,6 @@
 </head>
 <body class="h-full font-sans flex flex-col md:flex-row overflow-hidden bg-slate-950">
 
-    <!-- Mobile Header -->
     <div class="md:hidden flex items-center justify-between p-3 border-b border-slate-800 bg-slate-900 z-20">
         <div class="flex items-center space-x-2">
             <button id="open-sidebar-btn" class="p-2 text-slate-300 hover:text-white">
@@ -34,7 +30,6 @@
         </button>
     </div>
 
-    <!-- Sidebar -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-72 bg-slate-900 border-r border-slate-800 transform -translate-x-full md:translate-x-0 md:static transition-transform flex flex-col justify-between">
         <div class="p-4 border-b border-slate-800">
             <div class="flex items-center justify-between mb-4">
@@ -44,7 +39,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-slate-100 text-base">Worm AI</h1>
-                        <p class="text-[10px] text-emerald-400 uppercase font-medium">v2.5 Pro Vision</p>
+                        <p class="text-[10px] text-emerald-400 uppercase font-medium">Vision Fixed Edition</p>
                     </div>
                 </div>
                 <button id="close-sidebar-btn" class="md:hidden text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -56,7 +51,7 @@
         </div>
 
         <div class="flex-1 overflow-y-auto p-3 space-y-1">
-            <div class="px-2 py-1 text-[11px] font-semibold text-slate-500 uppercase">Recent Chats</div>
+            <div class="px-2 py-1 text-[11px] font-semibold text-slate-500 uppercase">Recent Conversations</div>
             <div id="chat-history-container" class="space-y-1"></div>
         </div>
 
@@ -65,17 +60,16 @@
                 <span class="flex items-center space-x-2"><i class="fa-brands fa-whatsapp text-emerald-400"></i><span>Join WhatsApp Group</span></span>
                 <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400"></i>
             </a>
-            <div class="pt-2 text-xs text-slate-400 flex items-center space-x-2">
+            <div class="pt-2 text-xs text-slate-400">
                 <span class="text-[11px]">Developed by <strong class="text-emerald-400">Ramzan Ahsan</strong></span>
             </div>
         </div>
     </aside>
 
-    <!-- Main Workspace -->
     <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-950">
         <header class="hidden md:flex items-center justify-between px-6 py-3 border-b border-slate-800 bg-slate-900/40">
             <div class="flex items-center space-x-3">
-                <span class="text-sm font-semibold text-slate-200">Current Session:</span>
+                <span class="text-sm font-semibold text-slate-200">Session ID:</span>
                 <span id="chat-id-text" class="px-2.5 py-1 bg-slate-800 text-emerald-400 font-mono text-xs rounded-md">New Chat</span>
             </div>
             <a href="https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1" target="_blank" class="px-3 py-1.5 bg-emerald-950 text-emerald-300 text-xs rounded-lg flex items-center space-x-1 border border-emerald-500/30">
@@ -88,17 +82,14 @@
                 <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white text-2xl shadow-xl mb-4">
                     <i class="fa-solid fa-bug"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-white mb-2">Welcome to Worm AI</h2>
+                <h2 class="text-2xl font-bold text-white mb-2">Worm AI Assistant</h2>
                 <p class="text-slate-400 text-sm max-w-md mb-6">Developed by <span class="text-emerald-400 font-semibold">Ramzan Ahsan</span>.</p>
             </div>
         </div>
 
-        <!-- Attachment Preview Bar -->
         <div id="attachment-preview-container" class="hidden px-4 md:px-6 pt-2 max-w-4xl mx-auto w-full">
             <div class="inline-flex items-center gap-2 p-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 shadow-md">
-                <span class="text-emerald-400">
-                    <i class="fa-solid fa-file-image text-sm"></i>
-                </span>
+                <span class="text-emerald-400"><i class="fa-solid fa-file-image text-sm"></i></span>
                 <span id="preview-file-name" class="max-w-xs truncate font-mono text-[11px]">attachment.png</span>
                 <button type="button" id="remove-attachment-btn" class="ml-2 text-slate-400 hover:text-red-400 p-1">
                     <i class="fa-solid fa-xmark"></i>
@@ -106,17 +97,16 @@
             </div>
         </div>
 
-        <!-- Input Bar -->
         <div class="p-4 md:p-6 bg-slate-950">
             <div class="max-w-4xl mx-auto relative">
-                <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.txt">
+                <input type="file" id="file-input" class="hidden" accept="image/*">
 
                 <form id="chat-form" class="bg-slate-900 border border-slate-800 focus-within:border-emerald-500 rounded-2xl p-2 flex items-end space-x-2">
                     <button type="button" id="attach-btn" class="p-3 text-slate-400 hover:text-emerald-400 rounded-xl hover:bg-slate-800 transition shrink-0 cursor-pointer">
                         <i class="fa-solid fa-paperclip text-lg"></i>
                     </button>
 
-                    <textarea id="user-input" rows="1" placeholder="Ask Worm AI anything..." class="flex-1 bg-transparent text-slate-100 text-sm focus:outline-none resize-none max-h-32 py-2 px-1"></textarea>
+                    <textarea id="user-input" rows="1" placeholder="Ask Worm AI or attach an image..." class="flex-1 bg-transparent text-slate-100 text-sm focus:outline-none resize-none max-h-32 py-2 px-1"></textarea>
 
                     <button type="submit" id="send-btn" disabled class="px-4 py-2.5 bg-emerald-600/40 text-slate-400 cursor-not-allowed rounded-xl flex items-center justify-center space-x-2 font-medium shrink-0 transition-all">
                         <span id="send-btn-text" class="text-xs font-semibold">Send</span>
@@ -137,6 +127,7 @@
         let currentMessages = [];
         let attachedFileObj = null;
 
+        // Backend Deployment Domain
         const BASE_API = 'https://wormapi.vercel.app';
 
         const messagesContainer = document.getElementById('messages-container');
@@ -169,7 +160,6 @@
         }
 
         userInput.addEventListener('input', updateSendButtonState);
-
         attachBtn.addEventListener('click', () => fileInput.click());
 
         fileInput.addEventListener('change', (e) => {
@@ -188,6 +178,15 @@
             attachmentPreview.classList.add('hidden');
             updateSendButtonState();
         });
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
 
         function generateChatId() {
             return 'chat_' + Math.random().toString(36).substring(2, 9);
@@ -278,49 +277,36 @@
             const fileToUpload = attachedFileObj;
             const fileName = attachedFileObj ? attachedFileObj.name : '';
 
-            // Reset UI Input Fields
+            // Reset Input UI
             attachedFileObj = null;
             fileInput.value = '';
             userInput.value = '';
             attachmentPreview.classList.add('hidden');
-            updateSendButtonState();
 
-            // Set Loading UI State
             sendBtn.disabled = true;
-            sendBtnText.textContent = "Uploading...";
+            sendBtnText.textContent = "Processing...";
             sendBtnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
 
             currentMessages.push({ role: 'user', text: text, fileName });
             renderMessages();
 
             try {
-                let attachmentIds = [];
+                let attachmentPayload = [];
 
-                // Step 1: Upload File to Backend /upload Endpoint
                 if (fileToUpload) {
-                    const uploadData = new FormData();
-                    uploadData.append('file', fileToUpload);
-
-                    const uploadRes = await fetch(`${BASE_API}/upload`, {
-                        method: 'POST',
-                        body: uploadData
-                    });
-                    const uploadJson = await uploadRes.json();
-                    
-                    if (uploadJson && uploadJson.file_id) {
-                        attachmentIds.push(uploadJson.file_id);
-                    }
+                    sendBtnText.textContent = "Reading Image...";
+                    const base64Data = await fileToBase64(fileToUpload);
+                    attachmentPayload.push(base64Data);
                 }
 
-                // Step 2: Dispatch Chat Request with attachment array
-                sendBtnText.textContent = "Thinking...";
+                sendBtnText.textContent = "Analyzing...";
                 const chatRes = await fetch(`${BASE_API}/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         user_input: text,
                         chat_id: currentChatId,
-                        attachments: attachmentIds
+                        attachments: attachmentPayload
                     })
                 });
 
@@ -332,7 +318,7 @@
                 saveSessionToStorage();
 
             } catch (err) {
-                currentMessages.push({ role: 'assistant', text: "Error connecting to backend API." });
+                currentMessages.push({ role: 'assistant', text: "Error connecting to AI service." });
             } finally {
                 sendBtnText.textContent = "Send";
                 sendBtnIcon.className = "fa-solid fa-paper-plane text-xs";

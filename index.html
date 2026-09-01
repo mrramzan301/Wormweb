@@ -18,8 +18,11 @@
                     <i class="fa-solid fa-volume-high"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-white">Worm AI Assistant</h2>
-                <p class="text-slate-400 text-sm mt-1">Vision OCR & Voice Speech Enabled</p>
-                <p class="text-xs text-emerald-400 mt-1">Developed by <strong>Ramzan Ahsan</strong></p>
+                <p class="text-slate-400 text-sm mt-1">Vision OCR, Speech & Chat Memory</p>
+                <div class="mt-2 text-xs text-slate-300">
+                    Developed by <strong class="text-emerald-400">Ramzan Ahsan</strong> | 
+                    <a href="https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1" target="_blank" class="text-emerald-400 underline hover:text-emerald-300">Join WhatsApp Group</a>
+                </div>
             </div>
         </div>
 
@@ -54,9 +57,10 @@
     </main>
 
     <script>
-        const BASE_API = 'https://wormapi.vercel.app'; // Apna backend API domain yahan update karein
+        const BASE_API = 'https://wormapi.vercel.app'; // Replace with your Vercel URL
         let selectedFile = null;
         let currentAudio = null;
+        let currentChatId = null; // Stores ongoing chat session ID for context history
 
         const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
@@ -111,11 +115,9 @@
             });
         }
 
-        // Speaker Click Audio Player Handler
         async function playSpeech(speechUrl, btnElement) {
             const icon = btnElement.querySelector('i');
             
-            // If playing current audio, pause it
             if (currentAudio && !currentAudio.paused) {
                 currentAudio.pause();
                 icon.className = "fa-solid fa-volume-high";
@@ -176,7 +178,11 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
             try {
-                let payload = { user_input: text, attachments: [] };
+                let payload = { 
+                    user_input: text, 
+                    chat_id: currentChatId, 
+                    attachments: [] 
+                };
 
                 if (fileToUpload) {
                     const base64 = await convertBase64(fileToUpload);
@@ -190,6 +196,12 @@
                 });
 
                 const data = await res.json();
+                
+                // Save returned chat_id to maintain memory
+                if (data.chat_id) {
+                    currentChatId = data.chat_id;
+                }
+
                 const botReply = data.text_response || "No response received";
                 const speechUrl = data.speech_url;
 

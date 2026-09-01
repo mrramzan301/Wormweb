@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Marked.js for Markdown Parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
@@ -63,7 +61,7 @@
         </div>
 
         <div class="p-3.5 border-t border-slate-800 space-y-2">
-            <a id="sidebar-wa-link" href="https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1" target="_blank" class="w-full py-2 px-3 bg-slate-800 text-slate-200 rounded-lg text-xs flex items-center justify-between">
+            <a href="https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1" target="_blank" class="w-full py-2 px-3 bg-slate-800 text-slate-200 rounded-lg text-xs flex items-center justify-between">
                 <span class="flex items-center space-x-2"><i class="fa-brands fa-whatsapp text-emerald-400"></i><span>Join WhatsApp Group</span></span>
                 <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400"></i>
             </a>
@@ -80,7 +78,7 @@
                 <span class="text-sm font-semibold text-slate-200">Current Session:</span>
                 <span id="chat-id-text" class="px-2.5 py-1 bg-slate-800 text-emerald-400 font-mono text-xs rounded-md">New Chat</span>
             </div>
-            <a id="header-wa-link" href="https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1" target="_blank" class="px-3 py-1.5 bg-emerald-950 text-emerald-300 text-xs rounded-lg flex items-center space-x-1 border border-emerald-500/30">
+            <a href="https://chat.whatsapp.com/FiZBn0BykHX47d1iHLOay1" target="_blank" class="px-3 py-1.5 bg-emerald-950 text-emerald-300 text-xs rounded-lg flex items-center space-x-1 border border-emerald-500/30">
                 <i class="fa-brands fa-whatsapp text-emerald-400 mr-1"></i> WhatsApp Group
             </a>
         </header>
@@ -95,37 +93,34 @@
             </div>
         </div>
 
-        <!-- Attachment Preview Bar with Processing State -->
+        <!-- Attachment Preview Bar -->
         <div id="attachment-preview-container" class="hidden px-4 md:px-6 pt-2 max-w-4xl mx-auto w-full">
             <div class="inline-flex items-center gap-2 p-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 shadow-md">
                 <span class="text-emerald-400">
                     <i class="fa-solid fa-file-image text-sm"></i>
                 </span>
                 <span id="preview-file-name" class="max-w-xs truncate font-mono text-[11px]">attachment.png</span>
-                <span id="upload-badge" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                    <i class="fa-solid fa-check"></i> Attached
-                </span>
                 <button type="button" id="remove-attachment-btn" class="ml-2 text-slate-400 hover:text-red-400 p-1">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Footer Input Bar -->
+        <!-- Input Bar -->
         <div class="p-4 md:p-6 bg-slate-950">
             <div class="max-w-4xl mx-auto relative">
                 <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.txt">
 
                 <form id="chat-form" class="bg-slate-900 border border-slate-800 focus-within:border-emerald-500 rounded-2xl p-2 flex items-end space-x-2">
-                    <button type="button" id="attach-btn" class="p-3 text-slate-400 hover:text-emerald-400 rounded-xl hover:bg-slate-800 transition shrink-0 cursor-pointer" style="touch-action: manipulation;">
-                        <i class="fa-solid fa-paperclip text-lg pointer-events-none"></i>
+                    <button type="button" id="attach-btn" class="p-3 text-slate-400 hover:text-emerald-400 rounded-xl hover:bg-slate-800 transition shrink-0 cursor-pointer">
+                        <i class="fa-solid fa-paperclip text-lg"></i>
                     </button>
 
                     <textarea id="user-input" rows="1" placeholder="Ask Worm AI anything..." class="flex-1 bg-transparent text-slate-100 text-sm focus:outline-none resize-none max-h-32 py-2 px-1"></textarea>
 
                     <button type="submit" id="send-btn" disabled class="px-4 py-2.5 bg-emerald-600/40 text-slate-400 cursor-not-allowed rounded-xl flex items-center justify-center space-x-2 font-medium shrink-0 transition-all">
-                        <span class="text-xs font-semibold">Send</span>
-                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                        <span id="send-btn-text" class="text-xs font-semibold">Send</span>
+                        <i id="send-btn-icon" class="fa-solid fa-paper-plane text-xs"></i>
                     </button>
                 </form>
                 <div class="flex items-center justify-between mt-2 px-2 text-[10px] text-slate-500">
@@ -136,35 +131,30 @@
         </div>
     </main>
 
-    <audio id="global-audio-player" class="hidden"></audio>
-
     <script>
         let currentChatId = null;
         let chatSessions = JSON.parse(localStorage.getItem('worm_ai_sessions') || '[]');
         let currentMessages = [];
-        
-        let attachedBase64 = null;
         let attachedFileObj = null;
-        let attachedFileName = '';
 
-        const apiUrl = 'https://wormapi.vercel.app/chat';
+        const BASE_API = 'https://wormapi.vercel.app';
 
         const messagesContainer = document.getElementById('messages-container');
         const welcomeScreen = document.getElementById('welcome-screen');
         const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
+        const sendBtnText = document.getElementById('send-btn-text');
+        const sendBtnIcon = document.getElementById('send-btn-icon');
         const fileInput = document.getElementById('file-input');
         const attachBtn = document.getElementById('attach-btn');
         const attachmentPreview = document.getElementById('attachment-preview-container');
         const previewFileName = document.getElementById('preview-file-name');
-        const uploadBadge = document.getElementById('upload-badge');
         const removeAttachmentBtn = document.getElementById('remove-attachment-btn');
         const chatIdText = document.getElementById('chat-id-text');
         const chatHistoryContainer = document.getElementById('chat-history-container');
         const sidebar = document.getElementById('sidebar');
 
-        // Toggle Send Button State
         function updateSendButtonState() {
             const hasText = userInput.value.trim().length > 0;
             const hasFile = attachedFileObj !== null;
@@ -180,34 +170,20 @@
 
         userInput.addEventListener('input', updateSendButtonState);
 
-        attachBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            fileInput.click();
-        });
+        attachBtn.addEventListener('click', () => fileInput.click());
 
-        // Convert attached image to Base64 instantly
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
             attachedFileObj = file;
-            attachedFileName = file.name;
             previewFileName.textContent = file.name;
-
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                attachedBase64 = evt.target.result;
-            };
-            reader.readAsDataURL(file);
-
             attachmentPreview.classList.remove('hidden');
             updateSendButtonState();
         });
 
         removeAttachmentBtn.addEventListener('click', () => {
             attachedFileObj = null;
-            attachedBase64 = null;
-            attachedFileName = '';
             fileInput.value = '';
             attachmentPreview.classList.add('hidden');
             updateSendButtonState();
@@ -298,50 +274,68 @@
 
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const text = userInput.value.trim();
-            if (!text && !attachedFileObj) return;
+            const text = userInput.value.trim() || "Is image me kya likha hai?";
+            const fileToUpload = attachedFileObj;
+            const fileName = attachedFileObj ? attachedFileObj.name : '';
 
-            const fileObj = attachedFileObj;
-            const fileName = attachedFileName;
-            const base64Data = attachedBase64;
-
-            // Reset Input UI
+            // Reset UI Input Fields
             attachedFileObj = null;
-            attachedBase64 = null;
-            attachedFileName = '';
             fileInput.value = '';
             userInput.value = '';
             attachmentPreview.classList.add('hidden');
             updateSendButtonState();
 
-            currentMessages.push({ role: 'user', text: text || 'Analyzed file', fileName });
+            // Set Loading UI State
+            sendBtn.disabled = true;
+            sendBtnText.textContent = "Uploading...";
+            sendBtnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
+
+            currentMessages.push({ role: 'user', text: text, fileName });
             renderMessages();
 
             try {
-                let res;
-                if (fileObj) {
-                    // Send via Multi-part POST Payload (Works for express file parsers)
-                    const formData = new FormData();
-                    formData.append('file', fileObj);
-                    formData.append('text', text || 'Kya likha hai is image me');
-                    formData.append('user_input', text || 'Kya likha hai is image me');
-                    formData.append('chat_id', currentChatId);
-                    if (base64Data) formData.append('image_base64', base64Data);
+                let attachmentIds = [];
 
-                    res = await fetch(apiUrl, { method: 'POST', body: formData });
-                } else {
-                    res = await fetch(`${apiUrl}?text=${encodeURIComponent(text)}&chat_id=${currentChatId}`);
+                // Step 1: Upload File to Backend /upload Endpoint
+                if (fileToUpload) {
+                    const uploadData = new FormData();
+                    uploadData.append('file', fileToUpload);
+
+                    const uploadRes = await fetch(`${BASE_API}/upload`, {
+                        method: 'POST',
+                        body: uploadData
+                    });
+                    const uploadJson = await uploadRes.json();
+                    
+                    if (uploadJson && uploadJson.file_id) {
+                        attachmentIds.push(uploadJson.file_id);
+                    }
                 }
 
-                const data = await res.json();
-                const botText = data.text_response || data.bot_response || data.message || data.response || "Response received";
-                const speechUrl = data.speech_url || "";
+                // Step 2: Dispatch Chat Request with attachment array
+                sendBtnText.textContent = "Thinking...";
+                const chatRes = await fetch(`${BASE_API}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_input: text,
+                        chat_id: currentChatId,
+                        attachments: attachmentIds
+                    })
+                });
 
-                currentMessages.push({ role: 'assistant', text: botText, audio: speechUrl });
+                const chatJson = await chatRes.json();
+                const botResponse = chatJson.text_response || "No response received";
+                const speechUrl = chatJson.speech_url || "";
+
+                currentMessages.push({ role: 'assistant', text: botResponse, audio: speechUrl });
                 saveSessionToStorage();
+
             } catch (err) {
                 currentMessages.push({ role: 'assistant', text: "Error connecting to backend API." });
             } finally {
+                sendBtnText.textContent = "Send";
+                sendBtnIcon.className = "fa-solid fa-paper-plane text-xs";
                 renderMessages();
                 updateSendButtonState();
             }
